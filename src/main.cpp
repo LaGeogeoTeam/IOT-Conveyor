@@ -18,9 +18,7 @@
 
 /*
  * The I2C address of GRBL 13.2  Module is 0x70 by default.
- * GRBL 13.2 模块的 I2C 地址默认为 0x70。
  * You could use the DIP Switch for modify I2C address to 0x71
- * 您可以使用拨码开关将 I2C 地址修改为 0x71
  */
 
 #define STEPMOTOR_I2C_ADDR_1 0x70
@@ -46,32 +44,38 @@ void setup()
   M5.Lcd.println("Press Btn A/B");
   M5.Lcd.setCursor(50, 120);
   M5.Lcd.println("Control Motor");
-  _GRBL_A.setMode("absolute");
-  _GRBL_B.setMode("absolute");
+  _GRBL_A.setMode("distance");
+  _GRBL_B.setMode("distance");
 }
 
 void loop()
 {
-  // If Button A was pressed,stepmotor will rotate back and forth at a time
-  // 如果按下按钮 A，步进电机将一次来回旋转
-  if (M5.BtnA.wasPressed())
-  { // A button
-    Serial.print(_GRBL_A.readStatus());
-    _GRBL_A.setMotor(5, 5, 5, 200);
-    _GRBL_A.setMotor(0, 0, 0, 0);
-  }
+  int intfiniteLoop = 5;
+  int intfiniteLoopNegative = -5;
 
+  if (M5.BtnA.wasPressed())
+  {
+    while (intfiniteLoop != 1)
+    {
+      Serial.print(_GRBL_A.readStatus());
+      _GRBL_A.setMotor(intfiniteLoop, intfiniteLoop, intfiniteLoop, 200);
+      _GRBL_A.setMotor(0, 0, 0, 0);
+      if (M5.BtnC.wasReleased())
+      {
+        intfiniteLoop = 1;
+        _GRBL_A.unLock();
+        _GRBL_B.unLock();
+        break;
+      }
+    }
+  }
   if (M5.BtnB.wasPressed())
   {
-    // USE Gcode
-    _GRBL_A.sendGcode("G1 X5Y5Z5 F200");
-    _GRBL_A.sendGcode("G1 X0Y0Z0 F200");
-  }
-
-  if (M5.BtnC.wasReleased())
-  {
-    _GRBL_A.unLock();
-    _GRBL_B.unLock();
+    while (intfiniteLoop != 1)
+    {
+      _GRBL_A.setMotor(intfiniteLoopNegative, intfiniteLoopNegative, intfiniteLoopNegative, 200);
+      _GRBL_A.setMotor(0, 0, 0, 0);
+    }
   }
   M5.update();
 }
