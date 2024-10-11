@@ -58,18 +58,14 @@ void loop()
   { // A button
     Serial.print(_GRBL_A.readStatus());
     _GRBL_A.setMotor(5, 5, 5, 200);
-    _GRBL_B.setMotor(5, 5, 5, 200);
-    _GRBL_A.setMotor(0, 0, 0, 200);
-    _GRBL_B.setMotor(0, 0, 0, 200);
+    _GRBL_A.setMotor(0, 0, 0, 0);
   }
 
   if (M5.BtnB.wasPressed())
   {
     // USE Gcode
     _GRBL_A.sendGcode("G1 X5Y5Z5 F200");
-    _GRBL_B.sendGcode("G1 X5Y5Z5 F200");
     _GRBL_A.sendGcode("G1 X0Y0Z0 F200");
-    _GRBL_B.sendGcode("G1 X0Y0Z0 F200");
   }
 
   if (M5.BtnC.wasReleased())
