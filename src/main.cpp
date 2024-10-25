@@ -15,6 +15,7 @@
 */
 #include <M5Stack.h>
 #include "grbl/Module_GRBL_13.2.h"
+#include <stdio.h>
 
 /*
  * The I2C address of GRBL 13.2  Module is 0x70 by default.
@@ -50,32 +51,36 @@ void setup()
 
 void loop()
 {
-  int intfiniteLoop = 5;
-  int intfiniteLoopNegative = -5;
+  bool isLooping = false;
+  int loopDirection = 0;
+  M5.update();
 
   if (M5.BtnA.wasPressed())
   {
-    while (intfiniteLoop != 1)
-    {
-      Serial.print(_GRBL_A.readStatus());
-      _GRBL_A.setMotor(intfiniteLoop, intfiniteLoop, intfiniteLoop, 200);
-      _GRBL_A.setMotor(0, 0, 0, 0);
-      if (M5.BtnC.wasReleased())
-      {
-        intfiniteLoop = 1;
-        _GRBL_A.unLock();
-        _GRBL_B.unLock();
-        break;
-      }
-    }
+    isLooping = true;
+    loopDirection = 1;
   }
+
   if (M5.BtnB.wasPressed())
   {
-    while (intfiniteLoop != 1)
-    {
-      _GRBL_A.setMotor(intfiniteLoopNegative, intfiniteLoopNegative, intfiniteLoopNegative, 200);
-      _GRBL_A.setMotor(0, 0, 0, 0);
-    }
+    isLooping = true;
+    loopDirection = -1;
   }
-  M5.update();
+
+  if (M5.BtnC.wasPressed())
+  {
+    isLooping = false;
+    _GRBL_A.unLock();
+    _GRBL_B.unLock();
+    Serial.println("Loop stopped");
+  }
+
+  if (isLooping)
+  {
+    int motorValue = loopDirection == 1 ? 5000 : -5000;
+
+    Serial.print(_GRBL_A.readStatus());
+    _GRBL_A.setMotor(motorValue, motorValue, motorValue, 200);
+    _GRBL_A.setMotor(0, 0, 0, 0);
+  }
 }
