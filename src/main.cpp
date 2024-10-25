@@ -28,6 +28,7 @@
 Module_GRBL _GRBL_A = Module_GRBL(STEPMOTOR_I2C_ADDR_1);
 Module_GRBL _GRBL_B = Module_GRBL(STEPMOTOR_I2C_ADDR_2);
 
+String motorStatus = "Stopped";
 void setup()
 {
   M5.begin();
@@ -37,15 +38,19 @@ void setup()
   _GRBL_B.Init(&Wire);
   Serial.begin(115200);
   M5.Lcd.setTextColor(WHITE, BLACK);
-  M5.Lcd.setTextSize(3);
+  M5.Lcd.setTextSize(2);
   M5.lcd.setBrightness(100);
-  M5.Lcd.setCursor(80, 40);
-  M5.Lcd.println("GRBL 13.2");
-  M5.Lcd.setCursor(50, 80);
-  M5.Lcd.println("Press Btn A/B");
-  M5.Lcd.setCursor(50, 120);
-  M5.Lcd.println("Control Motor");
+  M5.Lcd.setCursor(80, 10);
+  M5.Lcd.println("Control motor");
+  M5.Lcd.setCursor(0, 80);
+  M5.Lcd.println("Press button to start the motor");
+  M5.Lcd.setCursor(10, 200);
+  M5.Lcd.println("Forward");
   _GRBL_A.setMode("distance");
+  M5.Lcd.setCursor(140, 200);
+  M5.Lcd.println("Lock");
+  M5.Lcd.setCursor(220, 200);
+  M5.Lcd.println("Backward");
   _GRBL_B.setMode("distance");
 }
 
@@ -61,13 +66,13 @@ void loop()
     loopDirection = 1;
   }
 
-  if (M5.BtnB.wasPressed())
+  if (M5.BtnC.wasPressed())
   {
     isLooping = true;
     loopDirection = -1;
   }
 
-  if (M5.BtnC.wasPressed())
+  if (M5.BtnB.wasReleased())
   {
     isLooping = false;
     _GRBL_A.unLock();
@@ -78,7 +83,6 @@ void loop()
   if (isLooping)
   {
     int motorValue = loopDirection == 1 ? 5000 : -5000;
-
     Serial.print(_GRBL_A.readStatus());
     _GRBL_A.setMotor(motorValue, motorValue, motorValue, 200);
     _GRBL_A.setMotor(0, 0, 0, 0);
