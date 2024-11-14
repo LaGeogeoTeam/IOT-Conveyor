@@ -1,3 +1,5 @@
+#include <M5Unified.h>
+#include "wifi/WiFiManager.h"
 
 #include <M5Stack.h>
 #include "grbl/Module_GRBL_13.2.h"
@@ -13,10 +15,13 @@
 #include <unordered_map>
 using namespace std;
 
-/*
- * The I2C address of GRBL 13.2  Module is 0x70 by default.
- * You could use the DIP Switch for modify I2C address to 0x71
- */
+void setup() {
+    auto cfg = M5.config();
+    cfg.external_spk = true; // Active le haut-parleur externe
+    M5.begin(cfg);
+    Serial.begin(115200);
+
+// GRBL
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) > (b) ? (a) : (b))
