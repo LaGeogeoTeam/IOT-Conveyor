@@ -7,5 +7,6 @@
 // Déclaration des fonctions
 void connectToWiFi(const char *ssid, const char *password);
 void reconnectWiFi(const char *ssid, const char *password);
+void waitForWiFi();
 
 #endif // WIFI_MANAGER_H
