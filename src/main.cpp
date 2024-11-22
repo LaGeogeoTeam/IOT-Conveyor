@@ -1,5 +1,3 @@
-#include <M5Unified.h>
-#include "wifi/WiFiManager.h"
 
 #include <M5Stack.h>
 #include "grbl/Module_GRBL_13.2.h"
@@ -15,13 +13,10 @@
 #include <unordered_map>
 using namespace std;
 
-void setup() {
-    auto cfg = M5.config();
-    cfg.external_spk = true; // Active le haut-parleur externe
-    M5.begin(cfg);
-    Serial.begin(115200);
-
-// GRBL
+/*
+ * The I2C address of GRBL 13.2  Module is 0x70 by default.
+ * You could use the DIP Switch for modify I2C address to 0x71
+ */
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -109,7 +104,6 @@ void setup()
 void Servo(int angle)
 {
   Serial.print(angle);
-  delay(1000);
   goPlus.Servo_write_plusewidth(SERVO_NUM0_PW, angle);
 }
 
@@ -157,10 +151,10 @@ void rfidReader()
 {
   unordered_map<string, string> uuidTag;
 
-  uuidTag["9d32d4df"] = "1000";
-  uuidTag["3d9ed3df"] = "2000";
-  uuidTag["cd3bd4df"] = "3000";
-  uuidTag["8d3bd4df"] = "4000";
+  uuidTag["ddecc4df"] = "500";  // yellow
+  uuidTag["2dedc4df"] = "1000"; // green
+  uuidTag["dd32d4df"] = "1500"; // red
+  uuidTag["9dece8df"] = "2000"; // blue
   String uidString = "";
   for (byte i = 0; i < _MFRC522.uid.size;
        i++)
@@ -172,16 +166,11 @@ void rfidReader()
   if (!_MFRC522.PICC_IsNewCardPresent() ||
       !_MFRC522.PICC_ReadCardSerial())
   {
-
     if (uuidTag.find(uidString.c_str()) != uuidTag.end())
     {
-      Serial.print(uidString);
+      Serial.printf("%s\n", uidString);
       Servo(stoi(uuidTag.at(uidString.c_str())));
     }
-  }
-  else
-  {
-    goPlus.Servo_write_angle(SERVO_NUM0, 0);
   }
   M5.update();
 }
