@@ -109,42 +109,8 @@ void Servo(int angle)
 
 void stepMotor()
 {
-  bool isLooping = false;
-  int loopDirection = 0;
-
-  if (M5.BtnA.wasPressed())
-  {
-    M5.Lcd.setCursor(0, 80);
-    M5.Lcd.println("Forwarding     ");
-    isLooping = true;
-    loopDirection = 1;
-  }
-
-  if (M5.BtnC.wasPressed())
-  {
-    M5.Lcd.setCursor(0, 80);
-    M5.Lcd.println("Backward     ");
-    isLooping = true;
-    loopDirection = -1;
-  }
-
-  if (M5.BtnB.wasReleased())
-  {
-    M5.Lcd.setCursor(0, 80);
-    M5.Lcd.println("Locked     ");
-    isLooping = false;
-    _GRBL_A.unLock();
-    _GRBL_B.unLock();
-    Serial.println("Loop stopped");
-  }
-
-  if (isLooping)
-  {
-    int motorValue = loopDirection == 1 ? 5000 : -5000;
-    Serial.print(_GRBL_A.readStatus());
-    _GRBL_A.setMotor(motorValue, motorValue, motorValue, 200);
-    _GRBL_A.setMotor(0, 0, 0, 0);
-  }
+  _GRBL_A.setMotor(50000, 50000, 50000, 200);
+  _GRBL_A.setMotor(0, 0, 0, 0);
 }
 
 void rfidReader()
