@@ -1,9 +1,8 @@
-
 #include <M5Stack.h>
 #include "grbl/Module_GRBL_13.2.h"
 #include "rfid/MFRC522_I2C.h"
 #include <stdio.h>
-#include "GoPlus2.h"
+#include "goplus2/GoPlus2.h"
 #include <driver/rmt.h>
 #include <math.h>
 #undef min
@@ -82,16 +81,7 @@ void setup()
   M5.lcd.setBrightness(100);
   M5.Lcd.setCursor(80, 10);
   M5.Lcd.println("Control motor");
-  M5.Lcd.setCursor(0, 80);
-  M5.Lcd.println("Stopped");
-  M5.Lcd.setCursor(10, 200);
-  M5.Lcd.println("Forward");
   _GRBL_A.setMode("distance");
-  M5.Lcd.setCursor(140, 200);
-  M5.Lcd.println("Lock");
-  M5.Lcd.setCursor(220, 200);
-  M5.Lcd.println("Backward");
-  _GRBL_B.setMode("distance");
 
   _MFRC522.PCD_Init(); // Init _MFRC522
 
