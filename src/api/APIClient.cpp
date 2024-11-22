@@ -8,7 +8,7 @@ APIClient::APIClient(const char *baseURL, const char *token) {
     this->token = token;
 }
 
-String APIClient::getRequest(const char *endpoint) {
+String APIClient::getRequest(const char *endpoint, const String data) {
     waitForWiFi();
 
     if (WiFi.status() != WL_CONNECTED) {
@@ -16,7 +16,6 @@ String APIClient::getRequest(const char *endpoint) {
     }
 
     String url = String(baseURL) + String(endpoint);
-    M5.Lcd.println("Envoi de la requête GET à : " + url);
     http.begin(url);
     http.addHeader("DOLAPIKEY", token);
     http.addHeader("User-Agent", "ESP32Client");
@@ -24,7 +23,6 @@ String APIClient::getRequest(const char *endpoint) {
     http.addHeader("Accept", "*/*");
 
     int httpResponseCode = http.GET();
-    M5.Lcd.println("Code de réponse HTTP : " + String(httpResponseCode));
 
     if (httpResponseCode > 0) {
         String response = http.getString();

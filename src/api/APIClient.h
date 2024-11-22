@@ -7,7 +7,7 @@
 class APIClient {
 public:
     APIClient(const char *baseURL, const char *token);
-    String getRequest(const char *endpoint);
+    String getRequest(const char *endpoint, const String data);
     String postRequest(const char *endpoint, const String &payload);
 
 private:
