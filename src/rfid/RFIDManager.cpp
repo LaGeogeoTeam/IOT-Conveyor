@@ -1,13 +1,21 @@
 #include "RFIDManager.h"
+#include "../motor/MotorManager.h"
 
-#define MFRC522_I2C_ADDR 0x28
-MFRC522 _MFRC522 = MFRC522(MFRC522_I2C_ADDR);
+int warehouseIdArray[3][2] = {
+        {1, 500},
+        {2, 1000},
+        {3, 1500}
+};
 
-void initMFRC522(){
+RFIDManager::RFIDManager(MotorManager *motorManager) {
+    this->motorManager = motorManager;
+}
+
+void RFIDManager::initMFRC522(){
     _MFRC522.PCD_Init();
 }
 
-String getCardUID() {
+String RFIDManager::getCardUID() {
     // Vérifie si une nouvelle carte est présente
     if (!_MFRC522.PICC_IsNewCardPresent() || !_MFRC522.PICC_ReadCardSerial()) {
         return ""; // Pas de carte détectée
@@ -24,4 +32,13 @@ String getCardUID() {
 
     uid.toUpperCase(); // Convertir la chaîne en majuscules (modifie en place)
     return uid; // Retourner l'UID
+}
+
+void RFIDManager::rfidReader(const int id){
+    for(int cpt = 0; cpt < 3; cpt++){
+        if(id == warehouseIdArray[cpt][0]){
+            motorManager->servoMotor(warehouseIdArray[cpt][1]);
+        }
+    }
+    M5.update();
 }
