@@ -48,27 +48,26 @@ void setup() {
   M5.Lcd.setTextSize(2);
   M5.Lcd.setBrightness(100);
   M5.Lcd.setCursor(20, 20);
-
   // M5.Lcd.println("MFRC522 Test");
   _MFRC522.PCD_Init();  // Init _MFRC522
   M5.Lcd.println("Please put the card\n\nUID:");
 }
 
 void loop() {
-    M5.update();
-    reconnectWiFi(ssid, password);
+  M5.update();
+  reconnectWiFi(ssid, password);
 
-    String uid = getCardUID();
-    if (uid != "") { // Si une carte est détectée
-        M5.Lcd.clear();
-        M5.Lcd.println("Card Detected!");
-        String response = apiClient.getRequest("products/ref/", uid);
+  String uid = getCardUID();
+  if (uid != "") { // Si une carte est détectée
+      M5.Lcd.clear();
+      M5.Lcd.println("Card Detected!");
+      String response = apiClient.getRequest("products/ref/", uid);
 
-        String warehouseId = getJsonValue(response, "fk_default_warehouse");
-        M5.Lcd.clear();
-        M5.Lcd.setCursor(20, 20);
-        M5.Lcd.println("Warehouse Id: " + warehouseId);        
-        delay(200); // Pause pour éviter la lecture continue de la même carte
-        
-    }
+      String warehouseId = getJsonValue(response, "fk_default_warehouse");
+      M5.Lcd.clear();
+      M5.Lcd.setCursor(20, 20);
+      M5.Lcd.println("Warehouse Id: " + warehouseId);        
+      delay(200); // Pause pour éviter la lecture continue de la même carte
+      
+  }
 }
