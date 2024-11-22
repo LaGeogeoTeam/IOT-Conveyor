@@ -15,7 +15,7 @@ String APIClient::getRequest(const char *endpoint, const String data) {
         return "Erreur : WiFi non connecté";
     }
 
-    String url = String(baseURL) + String(endpoint);
+    String url = String(baseURL) + String(endpoint) + data;
     http.begin(url);
     http.addHeader("DOLAPIKEY", token);
     http.addHeader("User-Agent", "ESP32Client");

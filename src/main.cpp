@@ -147,12 +147,14 @@ void loop()
   { // Si une carte est détectée
     M5.Lcd.clear();
     M5.Lcd.println("Card Detected!");
+    M5.Lcd.println("uid : " + uid);
     String response = apiClient.getRequest("products/ref/", uid);
-
+    
     String warehouseId = getJsonValue(response, "fk_default_warehouse");
     M5.Lcd.clear();
     M5.Lcd.setCursor(20, 20);
     M5.Lcd.println("Warehouse Id: " + warehouseId);
+    
     rfidReader(warehouseId.toInt());
 
     delay(200); // Pause pour éviter la lecture continue de la même carte
