@@ -3,22 +3,31 @@
 #include "api/APIClient.h"
 #include "json/JsonParser.h"
 #include "rfid/RFIDManager.h"
-#include "grbl/Module_GRBL_13.2.h"
+#include "motor/MotorManager.h"
 #include <stdio.h>
-#include "goplus2/GoPlus2.h"
-#include <driver/rmt.h>
 #include <math.h>
+<<<<<<< HEAD
+=======
 #undef min
 #undef max
 #include <chrono>
 #include <unordered_map>
+>>>>>>> 3deb7c8807c50294a9649f1a36e57958b282f7c5
 using namespace std;
 
+// WIFI
 const char *ssid = "La Geogeo Team";
 const char *password = "LaGeogeoTeam";
+
+//DOLIBARR
 const char *baseURL = "http://146.59.232.167:8081/api/index.php/";
 const char *token = "c3iwyi9dcQ2s";
 
+<<<<<<< HEAD
+APIClient apiClient(baseURL, token);
+MotorManager motorManager;
+RFIDManager rfidManager(&motorManager);
+=======
 /*
  * The I2C address of GRBL 13.2  Module is 0x70 by default.
  * You could use the DIP Switch for modify I2C address to 0x71
@@ -100,49 +109,46 @@ void rfidReader(const int id)
   }
   M5.update();
 }
+>>>>>>> 3deb7c8807c50294a9649f1a36e57958b282f7c5
 
 void setup()
 {
   Serial.begin(115200);
   M5.begin();
   M5.Power.begin();
+  //Init des moteurs servo et step
+  motorManager.initMotor();
 
-  // GRBL
-  Wire.begin(21, 22);
-  _GRBL_A.Init(&Wire);
-  _GRBL_B.Init(&Wire);
-  Serial.begin(115200);
   M5.Lcd.setTextColor(WHITE, BLACK);
   M5.Lcd.setTextSize(2);
   M5.Lcd.setBrightness(100);
-  M5.Lcd.setCursor(80, 10);
-  M5.Lcd.println("Control motor");
-  _GRBL_A.setMode("distance");
-
-  // GOPLUS2
-  goPlus.begin();
-
-  goPlus.Servo_write_angle(SERVO_NUM0, 0);
+  
   auto cfg = M5.config();
   cfg.external_spk = true;
 
+  //Connection to wifi
   connectToWiFi(ssid, password);
 
   M5.Lcd.setTextColor(WHITE, BLACK);
   M5.Lcd.setTextSize(2);
   M5.Lcd.setBrightness(100);
   M5.Lcd.setCursor(20, 20);
-  initMFRC522(); // Init _MFRC522
+  // Init _MFRC522
+  rfidManager.initMFRC522(); 
   M5.Lcd.println("Please put the card\n\nUID:");
 }
 
 void loop()
 {
   M5.update();
+<<<<<<< HEAD
+  motorManager.stepMotor(); 
+=======
   stepMotor();
+>>>>>>> 3deb7c8807c50294a9649f1a36e57958b282f7c5
   reconnectWiFi(ssid, password);
 
-  String uid = getCardUID();
+  String uid = rfidManager.getCardUID();
   if (uid != "")
   { // Si une carte est détectée
     M5.Lcd.clear();
@@ -154,8 +160,13 @@ void loop()
     M5.Lcd.clear();
     M5.Lcd.setCursor(20, 20);
     M5.Lcd.println("Warehouse Id: " + warehouseId);
+<<<<<<< HEAD
+    
+    rfidManager.rfidReader(warehouseId.toInt());
+=======
 
     rfidReader(warehouseId.toInt());
+>>>>>>> 3deb7c8807c50294a9649f1a36e57958b282f7c5
 
     delay(200); // Pause pour éviter la lecture continue de la même carte
   }

@@ -1,13 +1,17 @@
 #include "RFIDManager.h"
+#include "../motor/MotorManager.h"
 
-#define MFRC522_I2C_ADDR 0x28
-MFRC522 _MFRC522 = MFRC522(MFRC522_I2C_ADDR);
 
-void initMFRC522(){
+
+RFIDManager::RFIDManager(MotorManager *motorManager) {
+    this->motorManager = motorManager;
+}
+
+void RFIDManager::initMFRC522(){
     _MFRC522.PCD_Init();
 }
 
-String getCardUID() {
+String RFIDManager::getCardUID() {
     // Vérifie si une nouvelle carte est présente
     if (!_MFRC522.PICC_IsNewCardPresent() || !_MFRC522.PICC_ReadCardSerial()) {
         return ""; // Pas de carte détectée
