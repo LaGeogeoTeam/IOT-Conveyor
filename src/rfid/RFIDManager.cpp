@@ -2,11 +2,6 @@
 #include "../motor/MotorManager.h"
 
 
-
-RFIDManager::RFIDManager(MotorManager *motorManager) {
-    this->motorManager = motorManager;
-}
-
 void RFIDManager::initMFRC522(){
     _MFRC522.PCD_Init();
 }
