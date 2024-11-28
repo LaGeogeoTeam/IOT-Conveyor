@@ -11,8 +11,10 @@ public:
     void initMotor();
     void servoMotor(int angle);
     void stepMotor();
+    void defineAngleForServoMotor(const int id);
 
 private:
+    int warehouseIdArray[3][2];
     GoPlus2 goPlus;
     Module_GRBL _GRBL_A = Module_GRBL(STEPMOTOR_I2C_ADDR_1);
 };
