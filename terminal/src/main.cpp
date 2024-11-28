@@ -86,8 +86,9 @@ int main(int, char **)
     ImGui_ImplGlfw_InstallEmscriptenCallbacks(window, "#canvas");
 #endif
     ImGui_ImplOpenGL3_Init(glsl_version);
-    bool show_dolibar_window = true;
+    bool show_dolibar_window = false;
     bool show_wifi_window = false;
+    bool show_firmware_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Main loop
@@ -111,29 +112,45 @@ int main(int, char **)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        // Conveyor terminal settings
+        ImGui::Begin("Conveyor Terminal Settings");
+        ImGui::Checkbox("Open Dolibar settings", &show_dolibar_window);
+        ImGui::Checkbox("Open WIFI settings", &show_wifi_window);
+        ImGui::Checkbox("Open Firmware settings", &show_firmware_window);
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+        ImGui::End();
+
+        // Dolibar Settings window
         if (show_dolibar_window)
         {
-            ImGui::Begin("Dolibar Settings");
-            // MySaveFunction();
+            ImGui::Begin("DOLIBAR Settings");
             char buf[50] = {0};
             ImGui::InputText("URL of the Dolibar", buf, IM_ARRAYSIZE(buf));
             if (ImGui::Button("Save"))
                 ;
             ImGui::Checkbox("Open WIFI settings", &show_wifi_window);
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
             ImGui::End();
         }
 
-        // 3. Show WIFI Settings window
+        // Show WIFI Settings window
         if (show_wifi_window)
         {
-            ImGui::Begin("WIFI Settings", &show_wifi_window); // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+            ImGui::Begin("WIFI Settings"); // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
             char wifi_name[50] = {0};
             char wifi_password[50] = {0};
             ImGui::InputText("WIFI Name", wifi_name, IM_ARRAYSIZE(wifi_name));
             ImGui::InputText("WIFI Password", wifi_password, IM_ARRAYSIZE(wifi_password), ImGuiInputTextFlags_Password);
             if (ImGui::Button("Save"))
                 ;
+            ImGui::End();
+        }
+
+        if (show_firmware_window)
+        {
+            ImGui::Begin("FIRMWARE Settings"); // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+            ImGui::Button("Reset firmware settings");
+            ImGui::Button("Reset Dolibar settings");
+            ImGui::Button("Reset wifi settings");
             ImGui::End();
         }
 
@@ -145,7 +162,6 @@ int main(int, char **)
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
         glfwSwapBuffers(window);
     }
 #ifdef __EMSCRIPTEN__
