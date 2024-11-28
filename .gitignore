@@ -4,3 +4,26 @@
 .vscode/launch.json
 .vscode/ipch
 .idea
+
+# Terminal
+
+/terminal/_deps/
+/terminal/bin/
+/terminal/CMakeFiles/
+/terminal/cmake_install.cmake
+/terminal/CMakeCache.txt
+/terminal/Makefile
+/terminal/CPackConfig.cmake
+/terminal/CPackSourceConfig.cmake
+/terminal/src/libs/examples/
+/terminal/src/libs/docs/
+/terminal/src/imgui_demo.o
+/terminal/src/imgui_draw.o
+/terminal/src/imgui_widgets.o
+/terminal/src/imgui_tables.o
+/terminal/src/imgui_impl_glfw.o
+/terminal/src/imgui_impl_opengl3.o
+/terminal/src/imgui.o
+/terminal/src/imgui.ini
+/terminal/src/main.o
+/terminal/src/terminal

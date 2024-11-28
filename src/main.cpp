@@ -10,7 +10,6 @@
 #include <math.h>
 #undef min
 #undef max
-#include <thread>
 #include <chrono>
 #include <unordered_map>
 using namespace std;
@@ -59,10 +58,9 @@ int flag = 0;
 int num = 0;
 
 int rfidArray[3][2] = {
-        {1, 500},
-        {2, 1000},
-        {3, 1500}
-};
+    {1, 500},
+    {2, 1000},
+    {3, 1500}};
 
 APIClient apiClient(baseURL, token);
 
@@ -93,8 +91,10 @@ void stepMotor()
 
 void rfidReader(const int id)
 {
-  for(int cpt = 0; cpt < 3; cpt++){
-    if(id == rfidArray[cpt][0]){
+  for (int cpt = 0; cpt < 3; cpt++)
+  {
+    if (id == rfidArray[cpt][0])
+    {
       Servo(rfidArray[cpt][1]);
     }
   }
@@ -139,7 +139,7 @@ void setup()
 void loop()
 {
   M5.update();
-  stepMotor(); 
+  stepMotor();
   reconnectWiFi(ssid, password);
 
   String uid = getCardUID();
@@ -149,12 +149,12 @@ void loop()
     M5.Lcd.println("Card Detected!");
     M5.Lcd.println("uid : " + uid);
     String response = apiClient.getRequest("products/ref/", uid);
-    
+
     String warehouseId = getJsonValue(response, "fk_default_warehouse");
     M5.Lcd.clear();
     M5.Lcd.setCursor(20, 20);
     M5.Lcd.println("Warehouse Id: " + warehouseId);
-    
+
     rfidReader(warehouseId.toInt());
 
     delay(200); // Pause pour éviter la lecture continue de la même carte
