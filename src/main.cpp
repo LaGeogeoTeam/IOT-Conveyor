@@ -26,21 +26,21 @@ String warehouseId;
 
 void setup()
 {
+  auto cfg = M5.config();
+  cfg.external_spk = true;
   Serial.begin(115200);
-  M5.begin();
+  M5.begin(cfg);
   M5.Power.begin();
   //Init des moteurs servo et step
-  motorManager.initMotor();
+  //motorManager.initMotor();
 
   M5.Lcd.setTextColor(WHITE, BLACK);
   M5.Lcd.setTextSize(2);
   M5.Lcd.setBrightness(100);
   
-  auto cfg = M5.config();
-  cfg.external_spk = true;
 
   //Connection to wifi
-  connectToWiFi(ssid, password);
+  //connectToWiFi(ssid, password);
 
   M5.Lcd.setTextColor(WHITE, BLACK);
   M5.Lcd.setTextSize(2);
@@ -54,37 +54,39 @@ void setup()
 void loop()
 {
   M5.update();
-  motorManager.stepMotor(); 
-  reconnectWiFi(ssid, password);
+  //motorManager.stepMotor(); 
+  //reconnectWiFi(ssid, password);
 
   String uid = rfidManager.getCardUID();
-  if (uid != "")
-  { // Si une carte est détectée
-    if (!currentId.isEmpty()) {
-      String payload = "{";
-        payload += "\"product_id\":\"" + currentId + "\",";
-        payload += "\"warehouse_id\":\"" + warehouseId + "\",";
-        payload += "\"qty\":1";
-        payload += "}";
+  rfidManager.readCardData();
 
-        // Effectuer la requête POST avec le payload
-        String postResponse = apiClient.postRequest("stockmovements", payload);
-    }
-    M5.Lcd.clear();
-    M5.Lcd.println("Card Detected!");
-    M5.Lcd.println("uid : " + uid);
-    String response = apiClient.getRequest("products/ref/", uid);
+  // if (uid != "")
+  // { // Si une carte est détectée
+  //   if (!currentId.isEmpty()) {
+  //     String payload = "{";
+  //       payload += "\"product_id\":\"" + currentId + "\",";
+  //       payload += "\"warehouse_id\":\"" + warehouseId + "\",";
+  //       payload += "\"qty\":1";
+  //       payload += "}";
 
-    warehouseId = getJsonValue(response, "fk_default_warehouse");
-    currentId = getJsonValue(response, "id");
+  //       // Effectuer la requête POST avec le payload
+  //       String postResponse = apiClient.postRequest("stockmovements", payload);
+  //   }
+  //   M5.Lcd.clear();
+  //   M5.Lcd.println("Card Detected!");
+  //   M5.Lcd.println("uid : " + uid);
+  //   String response = apiClient.getRequest("products/ref/", uid);
 
-    M5.Lcd.clear();
-    M5.Lcd.setCursor(20, 20);
-    M5.Lcd.println("Warehouse Id: " + warehouseId);
+  //   warehouseId = getJsonValue(response, "fk_default_warehouse");
+  //   currentId = getJsonValue(response, "id");
+
+  //   M5.Lcd.clear();
+  //   M5.Lcd.setCursor(20, 20);
+  //   M5.Lcd.println("Warehouse Id: " + warehouseId);
     
-    motorManager.defineAngleForServoMotor(warehouseId.toInt());
+  //   motorManager.defineAngleForServoMotor(warehouseId.toInt());
 
 
-    delay(200); // Pause pour éviter la lecture continue de la même carte
-  }
+  //   delay(200); // Pause pour éviter la lecture continue de la même carte
+  // }
 }
