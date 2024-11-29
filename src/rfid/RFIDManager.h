@@ -9,7 +9,6 @@
 
 class RFIDManager {
 public :
-    //RFIDManager(MotorManager *motorManager);
     void initMFRC522();
     String getCardUID();
     
