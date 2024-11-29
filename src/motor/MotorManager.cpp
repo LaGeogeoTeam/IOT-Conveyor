@@ -1,11 +1,6 @@
 #include "MotorManager.h"
 #define STEPMOTOR_I2C_ADDR_1 0x70
 
-int warehouseIdArray[3][2] = {
-        {1, 500},
-        {2, 1000},
-        {3, 1500}
-};
 
 void MotorManager::initMotor()
 {
@@ -16,12 +11,15 @@ void MotorManager::initMotor()
 
     // GOPLUS2
     this->goPlus.begin();
-    this->goPlus.Servo_write_angle(SERVO_NUM0, 0);
+    this->goPlus.Servo_write_angle(SERVO_NUM0, 0); 
 }
 
 void MotorManager::servoMotor(int angle)
 {
-  goPlus.Servo_write_plusewidth(SERVO_NUM0_PW, angle);
+  Serial.println("Servo-motor move to ");
+  Serial.print(angle);
+  //this->goPlus.Servo_write_angle(SERVO_NUM0, angle);//entre 0° et 180°
+  this->goPlus.Servo_write_plusewidth(SERVO_NUM0_PW, angle); //entre 500 et 2500 micro seconde
 }
 
 void MotorManager::stepMotor()
@@ -32,11 +30,16 @@ void MotorManager::stepMotor()
 
 void MotorManager::defineAngleForServoMotor(const int id)
 {
+  Serial.print("id : ");
+  Serial.println(id);
+  Serial.println("define angle");
   for(int cpt = 0; cpt < 3; cpt++){
-        if(id == warehouseIdArray[cpt][0]){
-            servoMotor(warehouseIdArray[cpt][1]);
-        }
+    Serial.print("warehouse id : ");
+    Serial.println(warehouseIdArray[cpt][0]);
+    if(id == warehouseIdArray[cpt][0]){
+      Serial.print("angle : ");
+      Serial.println(warehouseIdArray[cpt][1]);
+      this->servoMotor(warehouseIdArray[cpt][1]);
     }
-    M5.update();
-
+  }
 }

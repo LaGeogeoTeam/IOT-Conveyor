@@ -20,8 +20,7 @@ const char *token = "c3iwyi9dcQ2s";
 
 APIClient apiClient(baseURL, token);
 MotorManager motorManager;
-//RFIDManager rfidManager(&motorManager);
-
+RFIDManager rfidManager;
 
 void setup()
 {
@@ -39,45 +38,39 @@ void setup()
   cfg.external_spk = true;
 
   //Connection to wifi
-  //connectToWiFi(ssid, password);
+  connectToWiFi(ssid, password);
 
   M5.Lcd.setTextColor(WHITE, BLACK);
   M5.Lcd.setTextSize(2);
   M5.Lcd.setBrightness(100);
   M5.Lcd.setCursor(20, 20);
   // Init _MFRC522
-  //rfidManager.initMFRC522(); 
+  rfidManager.initMFRC522(); 
   M5.Lcd.println("Please put the card\n\nUID:");
 }
 
 void loop()
 {
   M5.update();
-  motorManager.stepMotor(); 
+  //motorManager.stepMotor(); 
 
-  motorManager.servoMotor(350);
+  reconnectWiFi(ssid, password);
 
-  delay(200);
+  String uid = rfidManager.getCardUID();
+  if (uid != "")
+  { // Si une carte est détectée
+    M5.Lcd.clear();
+    M5.Lcd.println("Card Detected!");
+    M5.Lcd.println("uid : " + uid);
+    String response = apiClient.getRequest("products/ref/", uid);
 
-  motorManager.servoMotor(1000);
-
-  //reconnectWiFi(ssid, password);
-
-  // String uid = rfidManager.getCardUID();
-  // if (uid != "")
-  // { // Si une carte est détectée
-  //   M5.Lcd.clear();
-  //   M5.Lcd.println("Card Detected!");
-  //   M5.Lcd.println("uid : " + uid);
-  //   String response = apiClient.getRequest("products/ref/", uid);
-
-  //   String warehouseId = getJsonValue(response, "fk_default_warehouse");
-  //   M5.Lcd.clear();
-  //   M5.Lcd.setCursor(20, 20);
-  //   M5.Lcd.println("Warehouse Id: " + warehouseId);
+    String warehouseId = getJsonValue(response, "fk_default_warehouse");
+    M5.Lcd.clear();
+    M5.Lcd.setCursor(20, 20);
+    M5.Lcd.println("Warehouse Id: " + warehouseId);
     
-  //   rfidManager.rfidReader(warehouseId.toInt());
+    motorManager.defineAngleForServoMotor(warehouseId.toInt());
 
-  //   delay(200); // Pause pour éviter la lecture continue de la même carte
-  // }
+    delay(1000); // Pause pour éviter la lecture continue de la même carte
+  }
 }

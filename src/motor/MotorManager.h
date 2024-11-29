@@ -14,7 +14,11 @@ public:
     void defineAngleForServoMotor(const int id);
 
 private:
-    int warehouseIdArray[3][2];
+    int warehouseIdArray[3][2] = {
+        {1, 500},
+        {2, 1500},
+        {3, 2500}
+    };
     GoPlus2 goPlus;
     Module_GRBL _GRBL_A = Module_GRBL(STEPMOTOR_I2C_ADDR_1);
 };
