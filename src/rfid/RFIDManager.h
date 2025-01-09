@@ -15,6 +15,9 @@ public :
     void readMifare1K();
     void printBlockAsDecimal(byte *data, int size);
     void printBlockAsText(byte *data, int size);
+    void processSector(byte sector);
+    bool getKeyFromSector(byte sector, MFRC522::MIFARE_Key &key);
+    bool readDataFromBlock(byte block, MFRC522::MIFARE_Key &key, byte *buffer);
     
 
 private:
