@@ -13,6 +13,7 @@ public :
     String getCardUID();
     void readCardData();
     void readMifare1K();
+    void writeMifare1k();
     void printBlockAsDecimal(byte *data, int size);
     void printBlockAsText(byte *data, int size);
     void processSector(byte sector);

@@ -51,8 +51,7 @@ void RFIDManager::readCardData()
     _MFRC522.PCD_StopCrypto1();
 }
 
-void RFIDManager::readMifare1K() 
-{
+void RFIDManager::readMifare1K() {
     MFRC522::MIFARE_Key key;
 
     // Clé par défaut pour la carte
@@ -60,142 +59,38 @@ void RFIDManager::readMifare1K()
         key.keyByte[i] = 0xFF;
     }
 
-    // Lire chaque secteur et ses blocs
-    for (byte sector = 0; sector < 16; sector++) {
-        Serial.print("Secteur ");
-        Serial.println(sector);
+    byte blockStart = 6; // Bloc de départ du secteur
+    if (!_MFRC522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, blockStart, &key, &(_MFRC522.uid))) {
+        Serial.print("Erreur d'authentification pour le secteur ");
+        Serial.println(1);
+    }
 
-        processSector(sector);
+    byte buffer[18];
+    byte size = sizeof(buffer);
 
-        // byte blockStart = sector * 4; // Bloc de départ du secteur
-        // if (!_MFRC522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, blockStart, &key, &(_MFRC522.uid))) {
-        //     Serial.print("Erreur d'authentification pour le secteur ");
-        //     Serial.println(sector);
-        //     continue;
-        // }
+    if (_MFRC522.MIFARE_Read(blockStart, buffer, &size) == MFRC522::STATUS_OK) {
+        Serial.print("Bloc ");
+        Serial.print(blockStart);
+        Serial.print(": ");
+        for (byte i = 0; i < 16; i++) {
+            Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+            Serial.print(buffer[i], HEX);
+        }
+        Serial.println();
 
-        // for (byte block = blockStart; block < blockStart + 4; block++) {
-        //     byte buffer[18];
-        //     byte size = sizeof(buffer);
+        // Afficher en texte brut
+        printBlockAsText(buffer, 16);
 
-        //     if (_MFRC522.MIFARE_Read(block, buffer, &size) == MFRC522::STATUS_OK) {
-        //         Serial.print("Bloc ");
-        //         Serial.print(block);
-        //         Serial.print(": ");
-        //         for (byte i = 0; i < 16; i++) {
-        //             Serial.print(buffer[i] < 0x10 ? " 0" : " ");
-        //             Serial.print(buffer[i], HEX);
-        //         }
-        //         Serial.println();
-
-        //         // Afficher en texte brut
-        //         printBlockAsText(buffer, 16);
-
-        //         // Afficher en décimal
-        //         printBlockAsDecimal(buffer, 16);
-        //     } else {
-        //         Serial.print("Impossible de lire le bloc ");
-        //         Serial.println(block);
-        //     }
-        //}
+        // Afficher en décimal
+        printBlockAsDecimal(buffer, 16);
+    } else {
+        Serial.print("Impossible de lire le bloc ");
+        Serial.println(blockStart);
     }
 
     _MFRC522.PICC_HaltA();
     _MFRC522.PCD_StopCrypto1();
 }
-
-void RFIDManager::processSector(byte sector) {
-    MFRC522::MIFARE_Key key;
-
-    // Récupérer la clé depuis le bloc de contrôle
-    if (!getKeyFromSector(sector, key)) {
-        Serial.println("Impossible de récupérer la clé !");
-        return;
-    }
-
-    // Lire les blocs 0, 1 et 2 avec la clé récupérée
-    byte buffer[18];
-    for (byte i = 0; i < 3; i++) {
-        byte block = (sector * 4) + i;
-        if (!readDataFromBlock(block, key, buffer)) {
-            Serial.print("Erreur lors de la lecture du bloc ");
-            Serial.println(block);
-        }
-    }
-}
-
-bool RFIDManager::getKeyFromSector(byte sector, MFRC522::MIFARE_Key &key) {
-    byte controlBlock = (sector * 4) + 3; // Dernier bloc du secteur (bloc de contrôle)
-    byte buffer[18];
-
-    // Clé par défaut pour authentifier le bloc de contrôle
-    MFRC522::MIFARE_Key defaultKey;
-    for (byte i = 0; i < 6; i++) {
-        defaultKey.keyByte[i] = 0x00; // Par défaut, FF FF FF FF FF FF
-    }
-
-    // Authentification du bloc de contrôle
-    if (!_MFRC522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, controlBlock, &defaultKey, &(_MFRC522.uid))) {
-        Serial.println("Erreur d'authentification pour le bloc de contrôle !");
-        return false;
-    }
-
-    // Lecture des données du bloc de contrôle
-    byte size = sizeof(buffer);
-    if (_MFRC522.MIFARE_Read(controlBlock, buffer, &size) != MFRC522::STATUS_OK) {
-        Serial.println("Erreur lors de la lecture du bloc de contrôle !");
-        return false;
-    }
-
-    // Récupération de la clé A
-    for (byte i = 0; i < 6; i++) {
-        key.keyByte[i] = buffer[i];
-    }
-
-    Serial.print("Clé récupérée pour le secteur ");
-    Serial.print(sector);
-    Serial.print(": ");
-    for (byte i = 0; i < 6; i++) {
-        Serial.print(key.keyByte[i], HEX);
-        Serial.print(" ");
-    }
-    Serial.println();
-
-    return true;
-}
-
-
-bool RFIDManager::readDataFromBlock(byte block, MFRC522::MIFARE_Key &key, byte *buffer) {
-    // Authentification du bloc
-    if (!_MFRC522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, block, &key, &(_MFRC522.uid))) {
-        Serial.println("Erreur d'authentification pour le bloc !");
-        return false;
-    }
-
-    // Lecture des données
-    byte size = 18;
-    if (_MFRC522.MIFARE_Read(block, buffer, &size) != MFRC522::STATUS_OK) {
-        Serial.println("Erreur lors de la lecture du bloc !");
-        return false;
-    }
-
-    // Affichage des données
-    Serial.print("Bloc ");
-    Serial.print(block);
-    Serial.print(": ");
-    for (byte i = 0; i < 16; i++) {
-        Serial.print(buffer[i], HEX);
-        Serial.print(" ");
-    }
-
-    printBlockAsDecimal(buffer, 16);
-
-    printBlockAsText(buffer, 16);
-
-    Serial.println();
-    return true;
-}
-
 
 void RFIDManager::printBlockAsDecimal(byte *data, int size) 
 {
@@ -218,4 +113,34 @@ void RFIDManager::printBlockAsText(byte *data, int size)
         }
     }
     Serial.println();
+}
+
+void RFIDManager::writeMifare1k(){
+    byte block = 6; // Exemple : Bloc 6
+    // Message à écrire (5 octets pour "Hello")
+    byte data[] = {'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd', ' ', '<', '3', '<', '3'}; // Le reste du bloc rempli avec 0
+
+    MFRC522::MIFARE_Key key;
+    // Clé par défaut pour la carte
+    for (byte i = 0; i < 6; i++) {
+        key.keyByte[i] = 0xFF;
+    }
+
+    // Authentifier avant d'écrire
+    if (_MFRC522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, block, &key, &(_MFRC522.uid)) != MFRC522::STATUS_OK) {
+        Serial.println("Échec de l'authentification !");
+        _MFRC522.PICC_HaltA();
+        return;
+    }
+
+    // Écrire les données
+    if (_MFRC522.MIFARE_Write(block, data, 16) != MFRC522::STATUS_OK) {
+        Serial.println("Erreur lors de l'écriture des données !");
+    } else {
+        Serial.println("Écriture réussie : Hello");
+    }
+
+    // Arrêter la communication avec la carte
+    _MFRC522.PICC_HaltA();
+    _MFRC522.PCD_StopCrypto1();
 }

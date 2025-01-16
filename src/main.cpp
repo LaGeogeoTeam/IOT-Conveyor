@@ -49,7 +49,11 @@ void setup()
   // Init _MFRC522
   rfidManager.initMFRC522();
   M5.Lcd.println("Please put the card\n\nUID:");
+
+
 }
+
+String currentUid = "";
 
 void loop()
 {
@@ -57,9 +61,25 @@ void loop()
   //motorManager.stepMotor(); 
   //reconnectWiFi(ssid, password);
 
+  // Récupérer l'UID de la carte
   String uid = rfidManager.getCardUID();
-  rfidManager.readCardData();
 
+  if (uid != "") { // Si une carte est détectée
+    if (uid != currentUid) { // Vérifier si c'est une nouvelle carte
+      Serial.println("Nouvelle carte détectée, écriture en cours...");
+      rfidManager.writeMifare1k(); // Écrire sur la carte
+      currentUid = uid; // Mettre à jour l'UID courant
+      delay(1000);
+    } else { // Si c'est la même carte qu'avant
+      Serial.println("Même carte détectée, lecture en cours...");
+      rfidManager.readMifare1K(); // Lire les données sur la carte
+      currentUid = ""; // Réinitialiser l'UID courant
+      delay(1000);
+    }
+  } else {
+    delay(500); // Réduire la fréquence de boucle pour économiser les ressources
+  }
+  
   // if (uid != "")
   // { // Si une carte est détectée
   //   if (!currentId.isEmpty()) {
