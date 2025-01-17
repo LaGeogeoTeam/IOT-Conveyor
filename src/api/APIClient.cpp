@@ -43,7 +43,7 @@ String APIClient::postRequest(const char *endpoint, const String &payload) {
     http.addHeader("DOLAPIKEY", token);
     http.addHeader("Content-Type", "application/json");
     int httpResponseCode = http.POST(payload);
-
+    
     if (httpResponseCode > 0) {
         String response = http.getString();
         http.end();
