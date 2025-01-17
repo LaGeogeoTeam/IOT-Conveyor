@@ -12,7 +12,7 @@ using namespace std;
 const char *ssid = "La Geogeo Team";
 const char *password = "LaGeogeoTeam";
 
-//DOLIBARR
+// DOLIBARR
 const char *baseURL = "http://146.59.232.167:8081/api/index.php/";
 const char *token = "c3iwyi9dcQ2s";
 
@@ -23,7 +23,6 @@ RFIDManager rfidManager;
 String currentId;
 String warehouseId;
 
-
 void setup()
 {
   auto cfg = M5.config();
@@ -31,16 +30,15 @@ void setup()
   Serial.begin(115200);
   M5.begin(cfg);
   M5.Power.begin();
-  //Init des moteurs servo et step
-  //motorManager.initMotor();
+  // Init des moteurs servo et step
+  // motorManager.initMotor();
 
   M5.Lcd.setTextColor(WHITE, BLACK);
   M5.Lcd.setTextSize(2);
   M5.Lcd.setBrightness(100);
-  
 
-  //Connection to wifi
-  //connectToWiFi(ssid, password);
+  // Connection to wifi
+  // connectToWiFi(ssid, password);
 
   M5.Lcd.setTextColor(WHITE, BLACK);
   M5.Lcd.setTextSize(2);
@@ -49,8 +47,6 @@ void setup()
   // Init _MFRC522
   rfidManager.initMFRC522();
   M5.Lcd.println("Please put the card\n\nUID:");
-
-
 }
 
 String currentUid = "";
@@ -58,28 +54,35 @@ String currentUid = "";
 void loop()
 {
   M5.update();
-  //motorManager.stepMotor(); 
-  //reconnectWiFi(ssid, password);
+  // motorManager.stepMotor();
+  // reconnectWiFi(ssid, password);
 
   // Récupérer l'UID de la carte
   String uid = rfidManager.getCardUID();
 
-  if (uid != "") { // Si une carte est détectée
-    if (uid != currentUid) { // Vérifier si c'est une nouvelle carte
+  if (uid != "")
+  { // Si une carte est détectée
+    uid.trim();
+    currentUid.trim();
+    if (uid != currentUid)
+    { // Vérifier si c'est une nouvelle carte
       Serial.println("Nouvelle carte détectée, écriture en cours...");
       rfidManager.writeMifare1k(); // Écrire sur la carte
-      currentUid = uid; // Mettre à jour l'UID courant
-      delay(1000);
-    } else { // Si c'est la même carte qu'avant
-      Serial.println("Même carte détectée, lecture en cours...");
-      rfidManager.readMifare1K(); // Lire les données sur la carte
-      currentUid = ""; // Réinitialiser l'UID courant
+      currentUid = uid;            // Mettre à jour l'UID courant
       delay(1000);
     }
-  } else {
+    else
+    { // Si c'est la même carte qu'avant
+      Serial.println("Même carte détectée, lecture en cours...");
+      rfidManager.readMifare1K(); // Lire les données sur la carte
+      delay(1000);
+    }
+  }
+  else
+  {
     delay(500); // Réduire la fréquence de boucle pour économiser les ressources
   }
-  
+
   // if (uid != "")
   // { // Si une carte est détectée
   //   if (!currentId.isEmpty()) {
@@ -103,9 +106,8 @@ void loop()
   //   M5.Lcd.clear();
   //   M5.Lcd.setCursor(20, 20);
   //   M5.Lcd.println("Warehouse Id: " + warehouseId);
-    
-  //   motorManager.defineAngleForServoMotor(warehouseId.toInt());
 
+  //   motorManager.defineAngleForServoMotor(warehouseId.toInt());
 
   //   delay(200); // Pause pour éviter la lecture continue de la même carte
   // }
