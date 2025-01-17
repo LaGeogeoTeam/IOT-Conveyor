@@ -50,7 +50,7 @@ void setup()
   rfidManager.initMFRC522();
   M5.Lcd.println("Please put the card\n\nUID:");
   preferences.begin("rfid", false);
-  // preferences.putBool("rwMode", false);
+  preferences.putBool("rwMode", 1);
 }
 
 String currentUid = "";
@@ -59,6 +59,10 @@ void loop()
 {
   // get the rfid mode from nvs
   bool rfidMode = preferences.getBool("rwMode");
+  M5.Lcd.setCursor(20, 150);
+  M5.Lcd.println("RFID current mode: ");
+  M5.Lcd.setCursor(240, 150);
+  M5.Lcd.println(rfidMode);
   M5.update();
   // motorManager.stepMotor();
   // reconnectWiFi(ssid, password);
@@ -81,8 +85,23 @@ void loop()
       if (uid != currentUid)
       { // Vérifier si c'est une nouvelle carte
         Serial.println("Nouvelle carte détectée, écriture en cours...");
-        rfidManager.writeMifare1k(); // Écrire sur la carte
-        currentUid = uid;            // Mettre à jour l'UID courant
+        byte data[] = {
+            'p',
+            'r',
+            'o',
+            'u',
+            't',
+            ' ',
+            'd',
+            'e',
+            ' ',
+            'g',
+            'r',
+            'e',
+            'g',
+        };
+        rfidManager.writeMifare1k(data); // Écrire sur la carte
+        currentUid = uid;                // Mettre à jour l'UID courant
         delay(1000);
       }
       else
