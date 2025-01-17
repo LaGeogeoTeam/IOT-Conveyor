@@ -50,6 +50,7 @@ void setup()
 }
 
 String currentUid = "";
+bool rfidMode = false;
 
 void loop()
 {
@@ -60,55 +61,46 @@ void loop()
   // Récupérer l'UID de la carte
   String uid = rfidManager.getCardUID();
 
+  if (M5.BtnA.isPressed())
+  {
+    M5.Lcd.setCursor(20, 50);
+    M5.Lcd.println("Read mode");
+  }
+  if (M5.BtnC.isPressed())
+  {
+    M5.Lcd.setCursor(50, 50);
+    M5.Lcd.println("Read and Write mode");
+    rfidMode = !rfidMode;
+  }
   if (uid != "")
-  { // Si une carte est détectée
-    uid.trim();
-    currentUid.trim();
-    if (uid != currentUid)
-    { // Vérifier si c'est une nouvelle carte
-      Serial.println("Nouvelle carte détectée, écriture en cours...");
-      rfidManager.writeMifare1k(); // Écrire sur la carte
-      currentUid = uid;            // Mettre à jour l'UID courant
+  {
+    // Si une carte est détectée
+    if (rfidMode == false)
+    {
+      rfidManager.readMifare1K();
       delay(1000);
     }
     else
-    { // Si c'est la même carte qu'avant
-      Serial.println("Même carte détectée, lecture en cours...");
-      rfidManager.readMifare1K(); // Lire les données sur la carte
-      delay(1000);
+    {
+      uid.trim();
+      currentUid.trim();
+      if (uid != currentUid)
+      { // Vérifier si c'est une nouvelle carte
+        Serial.println("Nouvelle carte détectée, écriture en cours...");
+        rfidManager.writeMifare1k(); // Écrire sur la carte
+        currentUid = uid;            // Mettre à jour l'UID courant
+        delay(1000);
+      }
+      else
+      { // Si c'est la même carte qu'avant
+        Serial.println("Même carte détectée, lecture en cours...");
+        rfidManager.readMifare1K(); // Lire les données sur la carte
+        delay(1000);
+      }
     }
   }
   else
   {
     delay(500); // Réduire la fréquence de boucle pour économiser les ressources
   }
-
-  // if (uid != "")
-  // { // Si une carte est détectée
-  //   if (!currentId.isEmpty()) {
-  //     String payload = "{";
-  //       payload += "\"product_id\":\"" + currentId + "\",";
-  //       payload += "\"warehouse_id\":\"" + warehouseId + "\",";
-  //       payload += "\"qty\":1";
-  //       payload += "}";
-
-  //       // Effectuer la requête POST avec le payload
-  //       String postResponse = apiClient.postRequest("stockmovements", payload);
-  //   }
-  //   M5.Lcd.clear();
-  //   M5.Lcd.println("Card Detected!");
-  //   M5.Lcd.println("uid : " + uid);
-  //   String response = apiClient.getRequest("products/ref/", uid);
-
-  //   warehouseId = getJsonValue(response, "fk_default_warehouse");
-  //   currentId = getJsonValue(response, "id");
-
-  //   M5.Lcd.clear();
-  //   M5.Lcd.setCursor(20, 20);
-  //   M5.Lcd.println("Warehouse Id: " + warehouseId);
-
-  //   motorManager.defineAngleForServoMotor(warehouseId.toInt());
-
-  //   delay(200); // Pause pour éviter la lecture continue de la même carte
-  // }
 }
