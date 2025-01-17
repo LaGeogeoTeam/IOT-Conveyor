@@ -162,3 +162,64 @@ void RFIDManager::writeMifare1k(byte *data)
     _MFRC522.PICC_HaltA();
     _MFRC522.PCD_StopCrypto1();
 }
+
+String currentUid = "";
+
+void RFIDManager::rfidConveyor()
+{
+    // get the rfid mode from nvs
+    Preferences preferences;
+    preferences.begin("rfid", false);
+    bool rfidMode = preferences.getBool("rwMode");
+    preferences.end();
+    // Récupérer l'UID de la carte
+    String uid = getCardUID();
+
+    if (uid != "")
+    {
+        // Si une carte est détectée
+        if (rfidMode == false)
+        {
+            readMifare1K();
+            delay(1000);
+        }
+        else
+        {
+            uid.trim();
+            currentUid.trim();
+            if (uid != currentUid)
+            { // Vérifier si c'est une nouvelle carte
+                Serial.println("Nouvelle carte détectée, écriture en cours...");
+                byte data[] = {
+                    'p',
+                    'r',
+                    'o',
+                    'u',
+                    't',
+                    ' ',
+                    'd',
+                    'e',
+                    ' ',
+                    'g',
+                    'r',
+                    'e',
+                    'g',
+                };
+                writeMifare1k(data); // Écrire sur la carte
+                currentUid = uid;    // Mettre à jour l'UID courant
+                delay(1000);
+            }
+            else
+            { // Si c'est la même carte qu'avant
+                Serial.println("Même carte détectée, lecture en cours...");
+                readMifare1K(); // Lire les données sur la carte
+                delay(1000);
+            }
+        }
+    }
+
+    else
+    {
+        delay(500); // Réduire la fréquence de boucle pour économiser les ressources
+    }
+}
