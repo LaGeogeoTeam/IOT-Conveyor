@@ -12,10 +12,6 @@
 Preferences preferences;
 using namespace std;
 
-// WIFI
-const char *ssid = "La Geogeo Team";
-const char *password = "LaGeogeoTeam";
-
 // DOLIBARR
 const char *baseURL = "http://146.59.232.167:8081/api/index.php/";
 const char *token = "c3iwyi9dcQ2s";
@@ -24,11 +20,9 @@ APIClient apiClient(baseURL, token);
 MotorManager motorManager;
 RFIDManager rfidManager;
 
-String currentId;
-String warehouseId;
-
 WebConfigServer webserver;
 
+// WIFI
 String ssid = "";
 String password = "";
 
@@ -39,6 +33,8 @@ void setup()
   Serial.begin(115200);
   M5.begin(cfg);
   M5.Power.begin();
+
+  // WIFI and WebServer
   loadWiFiCredentials(ssid, password);
 
   if (ssid == "" || password == "")
@@ -58,22 +54,14 @@ void setup()
   }
   webserver.begin();
   // Init des moteurs servo et step
-  // motorManager.initMotor();
+  motorManager.initMotor();
 
   M5.Lcd.setTextColor(WHITE, BLACK);
   M5.Lcd.setTextSize(2);
   M5.Lcd.setBrightness(100);
 
-  // Connection to wifi
-  // connectToWiFi(ssid, password);
-
-  M5.Lcd.setTextColor(WHITE, BLACK);
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setBrightness(100);
-  M5.Lcd.setCursor(20, 20);
-  // Init _MFRC522
+  // Init RFID
   rfidManager.initMFRC522();
-  M5.Lcd.println("Please put the card\n\nUID:");
   preferences.begin("rfid", false);
   // preferences.putBool("rwMode", false);
 }
@@ -88,9 +76,9 @@ void loop()
   M5.Lcd.setCursor(240, 150);
   M5.Lcd.println(rfidMode);
   M5.update();
-  // motorManager.stepMotor();
+  motorManager.stepMotor();
   // reconnectWiFi(ssid, password);
-  rfidManager.rfidConveyor();
+  rfidManager.rfidConveyor(baseURL, token);
 
   reconnectWiFi(ssid, password);
 }

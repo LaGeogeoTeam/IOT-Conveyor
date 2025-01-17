@@ -164,12 +164,15 @@ void RFIDManager::writeMifare1k(byte *data)
 }
 
 String currentUid = "";
+String warehouseId;
 
-void RFIDManager::rfidConveyor()
+void RFIDManager::rfidConveyor(const char *baseURL, const char *token)
 {
     // get the rfid mode from nvs
     Preferences preferences;
     preferences.begin("rfid", false);
+    APIClient apiClient(baseURL, token);
+    MotorManager motorManager;
     bool rfidMode = preferences.getBool("rwMode");
     preferences.end();
     // Récupérer l'UID de la carte
@@ -182,6 +185,22 @@ void RFIDManager::rfidConveyor()
         {
             readMifare1K();
             delay(1000);
+            if (!currentUid.isEmpty())
+            {
+                String payload = "{";
+                payload += "\"product_id\":\"" + uid + "\",";
+                payload += "\"warehouse_id\":\"" + warehouseId + "\",";
+                payload += "\"qty\":1";
+                payload += "}";
+
+                // Effectuer la requête POST avec le payload
+                String postResponse = apiClient.postRequest("stockmovements", payload);
+            }
+            String response = apiClient.getRequest("products/ref/", uid);
+
+            warehouseId = getJsonValue(response, "fk_default_warehouse");
+            uid = getJsonValue(response, "id");
+            motorManager.defineAngleForServoMotor(warehouseId.toInt());
         }
         else
         {
