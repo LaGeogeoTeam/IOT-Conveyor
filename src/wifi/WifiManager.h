@@ -1,12 +1,24 @@
-#ifndef WIFI_MANAGER_H
-#define WIFI_MANAGER_H
+#ifndef WIFIMANAGER_H
+#define WIFIMANAGER_H
 
 #include <M5Unified.h>
 #include <WiFi.h>
+#include <Preferences.h>
 
-// Déclaration des fonctions
-void connectToWiFi(const char *ssid, const char *password);
-void reconnectWiFi(const char *ssid, const char *password);
+extern bool isWiFiConnected;
+
+enum WifiModeState {
+    MY_WIFI_MODE_STA,
+    MY_WIFI_MODE_AP
+};
+extern WifiModeState currentWifiMode;
+
+void loadWiFiCredentials(String &ssid, String &password);
+void saveWiFiCredentials(const String &ssid, const String &password);
+void connectToWiFi(const String &ssid, const String &password);
+void reconnectWiFi(const String &ssid, const String &password);
 void waitForWiFi();
+void startAPMode();
+void tryReconnectionAP(const String &ssid, const String &password);
 
-#endif // WIFI_MANAGER_H
+#endif // WIFIMANAGER_H
