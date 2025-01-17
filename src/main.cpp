@@ -6,6 +6,8 @@
 #include "motor/MotorManager.h"
 #include <stdio.h>
 #include <math.h>
+#include <Preferences.h>
+Preferences preferences;
 using namespace std;
 
 // WIFI
@@ -47,13 +49,16 @@ void setup()
   // Init _MFRC522
   rfidManager.initMFRC522();
   M5.Lcd.println("Please put the card\n\nUID:");
+  preferences.begin("rfid", false);
+  // preferences.putBool("rwMode", false);
 }
 
 String currentUid = "";
-bool rfidMode = false;
 
 void loop()
 {
+  // get the rfid mode from nvs
+  bool rfidMode = preferences.getBool("rwMode");
   M5.update();
   // motorManager.stepMotor();
   // reconnectWiFi(ssid, password);
@@ -61,17 +66,6 @@ void loop()
   // Récupérer l'UID de la carte
   String uid = rfidManager.getCardUID();
 
-  if (M5.BtnA.isPressed())
-  {
-    M5.Lcd.setCursor(20, 50);
-    M5.Lcd.println("Read mode");
-  }
-  if (M5.BtnC.isPressed())
-  {
-    M5.Lcd.setCursor(50, 50);
-    M5.Lcd.println("Read and Write mode");
-    rfidMode = !rfidMode;
-  }
   if (uid != "")
   {
     // Si une carte est détectée
@@ -99,6 +93,7 @@ void loop()
       }
     }
   }
+
   else
   {
     delay(500); // Réduire la fréquence de boucle pour économiser les ressources
