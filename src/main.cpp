@@ -50,7 +50,6 @@ void setup()
   rfidManager.initMFRC522();
   M5.Lcd.println("Please put the card\n\nUID:");
   preferences.begin("rfid", false);
-  preferences.putBool("rwMode", 1);
 }
 
 String currentUid = "";
