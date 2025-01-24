@@ -19,8 +19,9 @@ const char *token = "c3iwyi9dcQ2s";
 APIClient apiClient(baseURL, token);
 MotorManager motorManager;
 RFIDManager rfidManager;
-
+WifiManager wifiManager;
 WebConfigServer webserver;
+
 
 // WIFI
 String ssid = "";
@@ -35,21 +36,21 @@ void setup()
   M5.Power.begin();
 
   // WIFI and WebServer
-  loadWiFiCredentials(ssid, password);
+  wifiManager.loadWiFiCredentials(ssid, password);
 
   if (ssid == "" || password == "")
   {
     Serial.println("Pas de WiFi config - Lancement AP Mode (premiere mise en place)...");
-    startAPMode();
+    wifiManager.startAPMode();
   }
   else
   {
-    connectToWiFi(ssid, password);
-    waitForWiFi();
+    wifiManager.connectToWiFi(ssid, password);
+    wifiManager.waitForWiFi();
 
     if (!isWiFiConnected)
     {
-      startAPMode();
+      wifiManager.startAPMode();
     }
   }
   webserver.begin();
@@ -76,9 +77,8 @@ void loop()
   M5.Lcd.setCursor(240, 150);
   M5.Lcd.println(rfidMode);
   M5.update();
-  motorManager.stepMotor();
-  // reconnectWiFi(ssid, password);
+  motorManager.startStepMotor();
   rfidManager.rfidConveyor(baseURL, token);
 
-  reconnectWiFi(ssid, password);
+  wifiManager.reconnectWiFi(ssid, password);
 }

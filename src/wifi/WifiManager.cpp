@@ -5,7 +5,7 @@ WifiModeState currentWifiMode = MY_WIFI_MODE_STA;
 
 Preferences wifiPrefs;
 
-void loadWiFiCredentials(String &ssid, String &password) {
+void WifiManager::loadWiFiCredentials(String &ssid, String &password) {
     wifiPrefs.begin("WiFiSettings", true); // Lecture seule
     ssid     = wifiPrefs.getString("ssid",     ssid);
     password = wifiPrefs.getString("password", password);
@@ -13,14 +13,14 @@ void loadWiFiCredentials(String &ssid, String &password) {
 }
 
 
-void saveWiFiCredentials(const String &ssid, const String &password) {
+void WifiManager::saveWiFiCredentials(const String &ssid, const String &password) {
     wifiPrefs.begin("WiFiSettings", false); // Écriture
     wifiPrefs.putString("ssid",     ssid);
     wifiPrefs.putString("password", password);
     wifiPrefs.end();
 }
 
-void connectToWiFi(const String &ssid, const String &password) {
+void WifiManager::connectToWiFi(const String &ssid, const String &password) {
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid.c_str(), password.c_str());
 
@@ -52,7 +52,7 @@ void connectToWiFi(const String &ssid, const String &password) {
     }
 }
 
-void reconnectWiFi(const String &ssid, const String &password) {
+void WifiManager::reconnectWiFi(const String &ssid, const String &password) {
     if (currentWifiMode == MY_WIFI_MODE_STA) {
         if (WiFi.status() != WL_CONNECTED) {
             if (isWiFiConnected) {
@@ -78,7 +78,7 @@ void reconnectWiFi(const String &ssid, const String &password) {
     }
 }
 
-void waitForWiFi() {
+void WifiManager::waitForWiFi() {
     int retryCount = 0;
     while (WiFi.status() != WL_CONNECTED && retryCount < 20) {
         delay(500);
@@ -91,7 +91,7 @@ void waitForWiFi() {
     }
 }
 
-void startAPMode() {
+void WifiManager::startAPMode() {
     WiFi.mode(WIFI_AP);
     WiFi.softAP("M5AP", "12345678");
     IPAddress apIP = WiFi.softAPIP();
@@ -107,7 +107,7 @@ void startAPMode() {
     M5.Lcd.println(apIP);
 }
 
-void tryReconnectionAP(const String &ssid, const String &password) {
+void WifiManager::tryReconnectionAP(const String &ssid, const String &password) {
     static unsigned long lastAttempt = 0;
     unsigned long now = millis();
 

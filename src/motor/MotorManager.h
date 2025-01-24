@@ -10,14 +10,15 @@ class MotorManager {
 public:
     void initMotor();
     void servoMotor(int angle);
-    void stepMotor();
+    void startStepMotor();
+    void stopStepMotor();
     void defineAngleForServoMotor(const int id);
 
 private:
     int warehouseIdArray[3][2] = {
-        {1, 500},
-        {2, 1500},
-        {3, 2500}
+        {1, 15},
+        {2, 25},
+        {3, 35}
     };
     GoPlus2 goPlus;
     Module_GRBL _GRBL_A = Module_GRBL(STEPMOTOR_I2C_ADDR_1);

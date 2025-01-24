@@ -16,14 +16,19 @@ void MotorManager::initMotor()
 
 void MotorManager::servoMotor(int angle)
 {
-  //this->goPlus.Servo_write_angle(SERVO_NUM0, angle);//entre 0° et 180°
-  this->goPlus.Servo_write_plusewidth(SERVO_NUM0_PW, angle); //entre 500 et 2500 micro seconde
+  this->goPlus.Servo_write_angle(SERVO_NUM0, angle);//entre 0° et 180°
+  //this->goPlus.Servo_write_plusewidth(SERVO_NUM0_PW, angle); //entre 500 et 2500 micro seconde
 }
 
-void MotorManager::stepMotor()
+void MotorManager::startStepMotor()
 {
   _GRBL_A.setMotor(50000, 50000, 50000, 200);
-  _GRBL_A.setMotor(0, 0, 0, 0);
+}
+
+void MotorManager::stopStepMotor()
+{
+  char cmd[] = "!\n"; 
+    _GRBL_A.sendGcode(cmd);
 }
 
 void MotorManager::defineAngleForServoMotor(const int id)

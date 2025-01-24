@@ -9,7 +9,7 @@ APIClient::APIClient(const char *baseURL, const char *token) {
 }
 
 String APIClient::getRequest(const char *endpoint, const String data) {
-    waitForWiFi();
+    wifiManager.waitForWiFi();
 
     if (WiFi.status() != WL_CONNECTED) {
         return "Erreur : WiFi non connecté";
@@ -37,7 +37,7 @@ String APIClient::getRequest(const char *endpoint, const String data) {
 
 
 String APIClient::postRequest(const char *endpoint, const String &payload) {
-    waitForWiFi();
+    wifiManager.waitForWiFi();
     String url = String(baseURL) + String(endpoint);
     http.begin(url);
     http.addHeader("DOLAPIKEY", token);

@@ -3,6 +3,7 @@
 
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include "wifi/WifiManager.h"
 
 class APIClient {
 public:
@@ -14,6 +15,7 @@ private:
     const char *baseURL;
     const char *token;
     HTTPClient http;
+    WifiManager wifiManager;
 };
 
 #endif // API_CLIENT_H

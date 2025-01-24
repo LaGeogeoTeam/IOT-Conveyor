@@ -13,12 +13,14 @@ enum WifiModeState {
 };
 extern WifiModeState currentWifiMode;
 
-void loadWiFiCredentials(String &ssid, String &password);
-void saveWiFiCredentials(const String &ssid, const String &password);
-void connectToWiFi(const String &ssid, const String &password);
-void reconnectWiFi(const String &ssid, const String &password);
-void waitForWiFi();
-void startAPMode();
-void tryReconnectionAP(const String &ssid, const String &password);
-
+class WifiManager {
+public:
+    void loadWiFiCredentials(String &ssid, String &password);
+    void saveWiFiCredentials(const String &ssid, const String &password);
+    void connectToWiFi(const String &ssid, const String &password);
+    void reconnectWiFi(const String &ssid, const String &password);
+    void waitForWiFi();
+    void startAPMode();
+    void tryReconnectionAP(const String &ssid, const String &password);
+};
 #endif // WIFIMANAGER_H
