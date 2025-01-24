@@ -13,10 +13,10 @@ Preferences preferences;
 using namespace std;
 
 // DOLIBARR
-const char *baseURL = "http://146.59.232.167:8081/api/index.php/";
-const char *token = "c3iwyi9dcQ2s";
+const char *baseURL = "";
+const char *token = "";
 
-APIClient apiClient(baseURL, token);
+//APIClient apiClient(baseURL, token);
 MotorManager motorManager;
 RFIDManager rfidManager;
 WifiManager wifiManager;
@@ -27,8 +27,7 @@ WebConfigServer webserver;
 String ssid = "";
 String password = "";
 
-int cpt = 0;
-
+APIClient apiClient = APIClient(baseURL, token);
 void setup()
 {
   auto cfg = M5.config();
@@ -39,10 +38,49 @@ void setup()
   
   // Init des moteurs servo et step
   motorManager.initMotor();
+
+  // Init du RFID
+  rfidManager.initMFRC522();
+
+  // Init du Wifi
+  wifiManager.loadWiFiCredentials(ssid, password);
+  if(ssid == "" || password == ""){
+    wifiManager.startAPMode();
+  } else {
+    wifiManager.connectToWiFi(ssid, password);
+    wifiManager.waitForWiFi();
+
+    if (!isWiFiConnected) {
+      wifiManager.startAPMode();
+    }
+  }
+  webserver.begin(); 
 }
 
 void loop()
 {
   M5.update();
-  motorManager.startStepMotor();
+  if(isWiFiConnected){
+    motorManager.startStepMotor(); 
+    String test = rfidManager.readCardData();
+    if(test != ""){
+      Serial.println(test);
+    }
+    String id = "1";//rfidManager.readCardData();
+    if(id != ""){
+      String data = apiClient.getRequest("/products/", id);
+      Serial.println(data);
+      String name = getJsonValue(data, "ref");
+      Serial.println(name);
+    }
+  }
+  
+  //motorManager.defineAngleForServoMotor(1);
+  
+  // if(id != ""){
+  //   String data = apiClient.getRequest("thirdparties", "ref="+id);
+  //   String name = getJsonValue(data, "name");
+  //   Serial.println(name);
+  // }
+
 }
