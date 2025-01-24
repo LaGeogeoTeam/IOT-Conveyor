@@ -29,11 +29,11 @@ String RFIDManager::getCardUID()
     return uid;        // Retourner l'UID
 }
 
-void RFIDManager::readCardData()
+String RFIDManager::readCardData()
 {
     if (!_MFRC522.PICC_IsNewCardPresent() || !_MFRC522.PICC_ReadCardSerial())
     {
-        return; // Pas de carte détectée
+        return ""; // Pas de carte détectée
     }
 
     // Identifier le type de carte
@@ -42,19 +42,24 @@ void RFIDManager::readCardData()
     // Afficher le type de carte
     Serial.print("Type de carte détecté (byte): ");
     Serial.println(piccTypeByte, HEX);
-
+    String dataRead = "";
     if (piccTypeByte == MFRC522::PICC_TYPE_MIFARE_1K)
     {
         Serial.println("Lecture des données de la carte MIFARE 1K...");
-        readMifare1K();
+       dataRead = readMifare1K();
+    } else {
+        dataRead = "";
+        Serial.println("Type de carte non pris en charge");
     }
 
     // Arrêter la communication avec la carte
     _MFRC522.PICC_HaltA();
     _MFRC522.PCD_StopCrypto1();
+
+    return dataRead;
 }
 
-void RFIDManager::readMifare1K()
+String RFIDManager::readMifare1K()
 {
     MFRC522::MIFARE_Key key;
 
@@ -73,6 +78,7 @@ void RFIDManager::readMifare1K()
 
     byte buffer[18];
     byte size = sizeof(buffer);
+    String readData = "";
 
     if (_MFRC522.MIFARE_Read(blockStart, buffer, &size) == MFRC522::STATUS_OK)
     {
@@ -91,15 +97,25 @@ void RFIDManager::readMifare1K()
 
         // Afficher en décimal
         printBlockAsDecimal(buffer, 16);
+
+        // Construire une String ASCII à partir du buffer
+        
+        for (byte i = 0; i < 16; i++)
+        {
+            readData += (char)buffer[i]; // Ajout de chaque octet sous forme de caractère
+        }
     }
     else
     {
         Serial.print("Impossible de lire le bloc ");
         Serial.println(blockStart);
+        readData = "";
     }
 
     _MFRC522.PICC_HaltA();
     _MFRC522.PCD_StopCrypto1();
+    
+    return readData;
 }
 
 void RFIDManager::printBlockAsDecimal(byte *data, int size)

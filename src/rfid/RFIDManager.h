@@ -15,8 +15,8 @@ class RFIDManager
 public:
     void initMFRC522();
     String getCardUID();
-    void readCardData();
-    void readMifare1K();
+    String readCardData();
+    String readMifare1K();
     void writeMifare1k(byte *data);
     void printBlockAsDecimal(byte *data, int size);
     void printBlockAsText(byte *data, int size);
