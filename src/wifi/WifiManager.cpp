@@ -1,4 +1,4 @@
-#include "WiFiManager.h"
+#include "WifiManager.h"
 
 bool isWiFiConnected = false;
 WifiModeState currentWifiMode = MY_WIFI_MODE_STA;

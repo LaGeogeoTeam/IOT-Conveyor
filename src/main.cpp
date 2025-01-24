@@ -1,5 +1,5 @@
 #include <M5Unified.h>
-#include "wifi/WiFiManager.h"
+#include "wifi/WifiManager.h"
 #include "webserver/WebConfigServer.h"
 #include "wifi/WifiManager.h"
 #include "api/APIClient.h"
