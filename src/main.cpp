@@ -28,6 +28,10 @@ String ssid = "";
 String password = "";
 
 APIClient apiClient = APIClient(baseURL, token);
+
+bool isWriting = false;
+String dataToWrite = "";
+
 void setup()
 {
   auto cfg = M5.config();
@@ -41,6 +45,7 @@ void setup()
 
   // Init du RFID
   rfidManager.initMFRC522();
+  rfidManager.loadRFIDPrefs();
 
   // Init du Wifi
   wifiManager.loadWiFiCredentials(ssid, password);
@@ -61,26 +66,40 @@ void loop()
 {
   M5.update();
   if(isWiFiConnected){
-    motorManager.startStepMotor(); 
-    String test = rfidManager.readCardData();
-    if(test != ""){
-      Serial.println(test);
-    }
-    String id = "1";//rfidManager.readCardData();
-    if(id != ""){
-      String data = apiClient.getRequest("/products/", id);
-      Serial.println(data);
-      String name = getJsonValue(data, "ref");
-      Serial.println(name);
+    // Démarrer le moteur en continu
+    motorManager.startStepMotor();
+
+    // On essaye de lire la carte pour détecter sa présence
+    // readCardData() renvoie par ex. l'UID ou une chaîne vide si pas de carte
+    String cardData = rfidManager.readCardData();
+
+    if (isWriting) {
+      // Si on est en mode écriture, on n'écrit que si une carte est détectée
+      if (cardData != "") {
+        Serial.print("[Main] Carte detectee. Ecriture RFID: ");
+        Serial.println(dataToWrite);
+
+        // Conversion du String dataToWrite en octets (16 max)
+        rfidManager.writeMifare1k((byte*) dataToWrite.c_str());
+
+        Serial.println("[Main] Ecriture RFID terminee!");
+        // Optionnel: Remettre isWriting à false si on ne veut qu'une écriture unique
+        // isWriting = false;
+      }
+    } else {
+      // Mode lecture : on lit uniquement si carte détectée
+      if(cardData != ""){
+        Serial.println("[Main] Lecture RFID: " + cardData);
+
+        // Exemple: Requete Dolibarr
+        String data = apiClient.getRequest("/products/", cardData);
+        Serial.println(data);
+
+        String name = getJsonValue(data, "ref");
+        Serial.print("[Main] Nom produit: ");
+        Serial.println(name);
+      }
     }
   }
-  
   //motorManager.defineAngleForServoMotor(1);
-  
-  // if(id != ""){
-  //   String data = apiClient.getRequest("thirdparties", "ref="+id);
-  //   String name = getJsonValue(data, "name");
-  //   Serial.println(name);
-  // }
-
 }

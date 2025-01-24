@@ -14,6 +14,8 @@ class RFIDManager
 {
 public:
     void initMFRC522();
+    void loadRFIDPrefs();
+    void saveRFIDPrefs();
     String getCardUID();
     String readCardData();
     String readMifare1K();

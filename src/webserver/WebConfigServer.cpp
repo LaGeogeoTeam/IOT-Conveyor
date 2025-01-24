@@ -2,6 +2,10 @@
 #include <AsyncTCP.h>
 #include <M5Unified.h>
 
+extern bool isWriting;         // Déclaré dans main.cpp
+extern String dataToWrite;     // Idem
+extern RFIDManager rfidManager;
+
 WebConfigServer::WebConfigServer()
   : server(80),
     ssid(""),
@@ -65,6 +69,74 @@ void WebConfigServer::setupServer() {
         request->send(200, "text/plain", "All data have been reset. Restarting...");
         delay(1000);
         ESP.restart();
+    });
+
+    server.on("/rfid", HTTP_GET, [](AsyncWebServerRequest *request) {
+      // On construit un HTML avec un checkbox pour isWriting, un input data
+      String html = R"html(
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>RFID Config</title>
+</head>
+<body>
+  <h2>RFID Configuration</h2>
+  <form action="/setRfid" method="POST">
+    <label>
+      <input type="checkbox" name="isWriting" value="1" )html";
+
+      // Si isWriting == true, on coche
+      if (isWriting) {
+        html += "checked";
+      }
+      html += R"html( />
+      Write Mode
+    </label>
+    <br><br>
+    <label>Data to Write:</label>
+    <input type="text" name="dataWrite" placeholder=")html";
+      // placeholder = dataToWrite
+      html += dataToWrite;
+      html += R"html(" />
+    <br><br>
+    <input type="submit" value="Save"/>
+  </form>
+</body>
+</html>
+)html";
+
+      request->send(200, "text/html", html);
+    });
+
+    // Route POST "/setRfid" -> met a jour isWriting/dataToWrite
+    server.on("/setRfid", HTTP_POST, [](AsyncWebServerRequest *request) {
+      // Récup isWriting
+      bool newIsWriting = false;
+      if (request->hasParam("isWriting", true)) {
+        // coché => param = "1"
+        newIsWriting = true;
+      }
+
+      // Récup dataWrite
+      String newDataWrite = "";
+      if (request->hasParam("dataWrite", true)) {
+        newDataWrite = request->getParam("dataWrite", true)->value();
+      }
+
+      // Mettre a jour les variables globales
+      isWriting = newIsWriting;
+      dataToWrite = newDataWrite;
+
+      // Sauvegarder
+      rfidManager.saveRFIDPrefs();
+
+      // Répondre et éventuellement redémarrer ou juste un message
+      request->send(200, "text/plain", "RFID config saved. isWriting=" 
+                                       + String(isWriting ? "true" : "false") 
+                                       + ", data=" + dataToWrite);
+      delay(1000);
+      ESP.restart();
     });
 }
 

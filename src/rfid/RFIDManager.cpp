@@ -1,6 +1,10 @@
 #include "RFIDManager.h"
 #include "../motor/MotorManager.h"
 
+static Preferences rfidPrefs;
+extern bool isWriting;         // Déclaré dans main.cpp
+extern String dataToWrite;     // Idem
+
 void RFIDManager::initMFRC522()
 {
     _MFRC522.PCD_Init();
@@ -146,35 +150,45 @@ void RFIDManager::printBlockAsText(byte *data, int size)
     Serial.println();
 }
 
-void RFIDManager::writeMifare1k(byte *data)
-{
-    byte block = 6; // Exemple : Bloc 6
-    MFRC522::MIFARE_Key key;
-    // Clé par défaut pour la carte
-    for (byte i = 0; i < 6; i++)
-    {
-        key.keyByte[i] = 0xFF;
+void RFIDManager::writeMifare1k(byte *data) {
+    // 1. Detecter la carte
+    if (!_MFRC522.PICC_IsNewCardPresent() || !_MFRC522.PICC_ReadCardSerial()) {
+        Serial.println("Aucune carte detectee!");
+        return;
     }
 
-    // Authentifier avant d'écrire
-    if (_MFRC522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, block, &key, &(_MFRC522.uid)) != MFRC522::STATUS_OK)
-    {
-        Serial.println("Échec de l'authentification !");
+    // 2. Verif type
+    byte piccTypeByte = _MFRC522.PICC_GetType(_MFRC522.uid.sak);
+    if (piccTypeByte != MFRC522::PICC_TYPE_MIFARE_1K && piccTypeByte != MFRC522::PICC_TYPE_MIFARE_4K) {
+        Serial.println("Carte non supportee (pas une MIFARE Classic)!");
         _MFRC522.PICC_HaltA();
         return;
     }
 
-    // Écrire les données
-    if (_MFRC522.MIFARE_Write(block, data, 16) != MFRC522::STATUS_OK)
-    {
-        Serial.println("Erreur lors de l'écriture des données !");
-    }
-    else
-    {
-        Serial.println("Écriture réussie");
+    MFRC522::MIFARE_Key key;
+    for (byte i = 0; i < 6; i++) {
+        key.keyByte[i] = 0xFF; // Clé par défaut
     }
 
-    // Arrêter la communication avec la carte
+    // BloCs - ex. secteur 1 => blocks 4..7
+    byte blockData = 6;
+    byte trailerBlock = 7;
+
+    // 3. Authentification sur le trailer block
+    if (_MFRC522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(_MFRC522.uid)) != MFRC522::STATUS_OK) {
+        Serial.println("Echec d'authentification!");
+        _MFRC522.PICC_HaltA();
+        return;
+    }
+
+    // 4. Ecriture
+    if (_MFRC522.MIFARE_Write(blockData, data, 16) != MFRC522::STATUS_OK) {
+        Serial.println("Erreur lors de l'ecriture!");
+    } else {
+        Serial.println("Ecriture reussie sur le bloc 6!");
+    }
+
+    // 5. Stop
     _MFRC522.PICC_HaltA();
     _MFRC522.PCD_StopCrypto1();
 }
@@ -257,4 +271,19 @@ void RFIDManager::rfidConveyor(const char *baseURL, const char *token)
     {
         delay(500); // Réduire la fréquence de boucle pour économiser les ressources
     }
+}
+
+void RFIDManager::loadRFIDPrefs() {
+  rfidPrefs.begin("rfidState", true); // Mode lecture
+  isWriting = rfidPrefs.getBool("isWriting", false);
+  dataToWrite = rfidPrefs.getString("dataWrite", "");
+  rfidPrefs.end();
+}
+
+void RFIDManager::saveRFIDPrefs() {
+  rfidPrefs.begin("rfidState", false); // Mode écriture
+  rfidPrefs.putBool("isWriting", isWriting);
+  rfidPrefs.putString("dataWrite", dataToWrite);
+  rfidPrefs.end();
+  Serial.println("[Main] isWriting / dataToWrite saved.");
 }

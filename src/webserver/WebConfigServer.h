@@ -4,6 +4,7 @@
 #include <ESPAsyncWebServer.h>
 #include <Preferences.h>
 #include <Arduino.h>
+#include "rfid/RFIDManager.h"
 
 class WebConfigServer {
 public:
@@ -22,7 +23,7 @@ private:
     String generateConfigPage(const String &ssid, const String &password, const String &apiURL, const String &apiToken);
 
     AsyncWebServer server; 
-    Preferences preferences;
+    Preferences preferences;    
 
     String ssid;
     String password;
