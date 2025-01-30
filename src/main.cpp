@@ -12,18 +12,14 @@
 Preferences preferences;
 using namespace std;
 
-// DOLIBARR
 const char *baseURL = "";
 const char *token = "";
 
-//APIClient apiClient(baseURL, token);
 MotorManager motorManager;
 RFIDManager rfidManager;
 WifiManager wifiManager;
 WebConfigServer webserver;
 
-
-// WIFI
 String ssid = "";
 String password = "";
 
@@ -31,7 +27,7 @@ APIClient apiClient = APIClient(baseURL, token);
 
 bool isWriting = false;
 String dataToWrite = "";
-
+String currentUid = "";
 void setup()
 {
   auto cfg = M5.config();
@@ -66,40 +62,65 @@ void loop()
 {
   M5.update();
   if(isWiFiConnected){
-    // Démarrer le moteur en continu
     motorManager.startStepMotor();
+    String uid = rfidManager.getCardUID();
+  
+    if (uid != "")
+    {
+      if (isWriting) {
+        if(dataToWrite == ""){
+          rfidManager.loadRFIDPrefs();
+        }
+        uid.trim();
+        currentUid.trim();
+        if (uid != currentUid){
+          Serial.println("Nouvelle carte détectée, écriture en cours...");
+                byte data[] = {
+                    'p',
+                    'r',
+                    'o',
+                    'u',
+                    't',
+                    ' ',
+                    'd',
+                    'e',
+                    ' ',
+                    'e',
+                    'l',
+                    'o',
+                    'u',
+                };
+                byte *byteArray = (byte*) dataToWrite.c_str();
+                rfidManager.writeMifare1k(byteArray); // Écrire sur la carte
+                currentUid = uid;    // Mettre à jour l'UID courant
+                delay(1000);
+        } else {
+          Serial.println("Même carte détectée, lecture en cours...");
+          rfidManager.readMifare1K(); // Lire les données sur la carte
+          delay(1000);
+        }
+      } else {
+        if(uid != ""){
+          String dataRead = rfidManager.readMifare1K();
+          Serial.println("dataRead: " + dataRead);
+          String response = apiClient.getRequest("/products/ref/", dataRead);
+          Serial.println(response);
 
-    // On essaye de lire la carte pour détecter sa présence
-    // readCardData() renvoie par ex. l'UID ou une chaîne vide si pas de carte
-    String cardData = rfidManager.readCardData();
+          String warehouseId = getJsonValue(response, "fk_default_warehouse");
+          String id = getJsonValue(response, "id");
+          Serial.print("[Main] Warehouse Id: ");
+          Serial.println(warehouseId);
+          motorManager.defineAngleForServoMotor(warehouseId.toInt());
+          String payload = "{";
+                payload += "\"product_id\":\"" + id + "\",";
+                payload += "\"warehouse_id\":\"" + warehouseId + "\",";
+                payload += "\"qty\":1";
+                payload += "}";
 
-    if (isWriting) {
-      // Si on est en mode écriture, on n'écrit que si une carte est détectée
-      if (cardData != "") {
-        Serial.print("[Main] Carte detectee. Ecriture RFID: ");
-        Serial.println(dataToWrite);
-
-        // Conversion du String dataToWrite en octets (16 max)
-        rfidManager.writeMifare1k((byte*) dataToWrite.c_str());
-
-        Serial.println("[Main] Ecriture RFID terminee!");
-        // Optionnel: Remettre isWriting à false si on ne veut qu'une écriture unique
-        // isWriting = false;
-      }
-    } else {
-      // Mode lecture : on lit uniquement si carte détectée
-      if(cardData != ""){
-        Serial.println("[Main] Lecture RFID: " + cardData);
-
-        // Exemple: Requete Dolibarr
-        String data = apiClient.getRequest("/products/", cardData);
-        Serial.println(data);
-
-        String name = getJsonValue(data, "ref");
-        Serial.print("[Main] Nom produit: ");
-        Serial.println(name);
-      }
-    }
+          String postResponse = apiClient.postRequest("/stockmovements", payload);
+        }
+      } 
+    }      
   }
-  //motorManager.defineAngleForServoMotor(1);
+  //
 }

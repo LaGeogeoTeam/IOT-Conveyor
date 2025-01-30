@@ -19,6 +19,7 @@ public:
     String getCardUID();
     String readCardData();
     String readMifare1K();
+    void writeMifare1k(); //byte *data
     void writeMifare1k(byte *data);
     void printBlockAsDecimal(byte *data, int size);
     void printBlockAsText(byte *data, int size);
