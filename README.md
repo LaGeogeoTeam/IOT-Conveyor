@@ -62,5 +62,5 @@ Le projet repose sur plusieurs technologies et bibliothèques :
 
 ### 🛠️ **2. Installation du projet**  
 ```sh
-git clone https://github.com/votre-repo/m5stack-rfid-dolibarr.git
-cd m5stack-rfid-dolibarr
+git clone https://github.com/LaGeogeoTeam/IOT-Conveyor.git
+cd IOT-Conveyor
