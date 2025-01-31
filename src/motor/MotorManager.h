@@ -11,7 +11,6 @@ public:
     void initMotor();
     void servoMotor(int angle);
     void startStepMotor();
-    void stopStepMotor();
     void defineAngleForServoMotor(const int id);
 
 private:

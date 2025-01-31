@@ -11,8 +11,6 @@ public:
     WebConfigServer();
     void begin();
 
-    String getApiURL() const { return apiURL; }
-    String getToken() const { return token; }
     void setApiURL(const String &url) { apiURL = url; }
     void setToken(const String &tkn) { token = tkn; }
 

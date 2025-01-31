@@ -33,36 +33,6 @@ String RFIDManager::getCardUID()
     return uid;        // Retourner l'UID
 }
 
-String RFIDManager::readCardData()
-{
-    if (!_MFRC522.PICC_IsNewCardPresent() || !_MFRC522.PICC_ReadCardSerial())
-    {
-        return ""; // Pas de carte détectée
-    }
-
-    // Identifier le type de carte
-    byte piccTypeByte = _MFRC522.PICC_GetType(_MFRC522.uid.sak);
-
-    // Afficher le type de carte
-    Serial.print("Type de carte détecté (byte): ");
-    Serial.println(piccTypeByte, HEX);
-    String dataRead = "";
-    if (piccTypeByte == MFRC522::PICC_TYPE_MIFARE_1K)
-    {
-        Serial.println("Lecture des données de la carte MIFARE 1K...");
-       dataRead = readMifare1K();
-    } else {
-        dataRead = "";
-        Serial.println("Type de carte non pris en charge");
-    }
-
-    // Arrêter la communication avec la carte
-    _MFRC522.PICC_HaltA();
-    _MFRC522.PCD_StopCrypto1();
-
-    return dataRead;
-}
-
 String RFIDManager::readMifare1K()
 {
     MFRC522::MIFARE_Key key;
@@ -150,36 +120,6 @@ void RFIDManager::printBlockAsText(byte *data, int size)
     Serial.println();
 }
 
-void RFIDManager::writeMifare1k(){
-    byte block = 6; // Exemple : Bloc 6
-    // Message à écrire (5 octets pour "Hello")
-    byte data[] = {'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd', ' ', '<', '3', '<', '3'}; // Le reste du bloc rempli avec 0
-
-    MFRC522::MIFARE_Key key;
-    // Clé par défaut pour la carte
-    for (byte i = 0; i < 6; i++) {
-        key.keyByte[i] = 0xFF;
-    }
-
-    // Authentifier avant d'écrire
-    if (_MFRC522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, block, &key, &(_MFRC522.uid)) != MFRC522::STATUS_OK) {
-        Serial.println("Échec de l'authentification !");
-        _MFRC522.PICC_HaltA();
-        return;
-    }
-
-    // Écrire les données
-    if (_MFRC522.MIFARE_Write(block, data, 16) != MFRC522::STATUS_OK) {
-        Serial.println("Erreur lors de l'écriture des données !");
-    } else {
-        Serial.println("Écriture réussie : Hello");
-    }
-
-    // Arrêter la communication avec la carte
-    _MFRC522.PICC_HaltA();
-    _MFRC522.PCD_StopCrypto1();
-}
-
 void RFIDManager::writeMifare1k(byte *data)
 {
     byte block = 6; // Exemple : Bloc 6
@@ -211,86 +151,6 @@ void RFIDManager::writeMifare1k(byte *data)
     // Arrêter la communication avec la carte
     _MFRC522.PICC_HaltA();
     _MFRC522.PCD_StopCrypto1();
-}
-
-String currentUID = "";
-String warehouseId;
-
-void RFIDManager::rfidConveyor(const char *baseURL, const char *token)
-{
-    // get the rfid mode from nvs
-    Preferences preferences;
-    preferences.begin("rfid", false);
-    APIClient apiClient(baseURL, token);
-    MotorManager motorManager;
-    bool rfidMode = preferences.getBool("rwMode");
-    preferences.end();
-    // Récupérer l'UID de la carte
-    String uid = getCardUID();
-
-    if (uid != "")
-    {
-        // Si une carte est détectée
-        if (rfidMode == false)
-        {
-            readMifare1K();
-            delay(1000);
-            if (!currentUID.isEmpty())
-            {
-                String payload = "{";
-                payload += "\"product_id\":\"" + uid + "\",";
-                payload += "\"warehouse_id\":\"" + warehouseId + "\",";
-                payload += "\"qty\":1";
-                payload += "}";
-
-                // Effectuer la requête POST avec le payload
-                String postResponse = apiClient.postRequest("stockmovements", payload);
-            }
-            String response = apiClient.getRequest("products/ref/", uid);
-
-            warehouseId = getJsonValue(response, "fk_default_warehouse");
-            uid = getJsonValue(response, "id");
-            motorManager.defineAngleForServoMotor(warehouseId.toInt());
-        }
-        else
-        {
-            uid.trim();
-            currentUID.trim();
-            if (uid != currentUID)
-            { // Vérifier si c'est une nouvelle carte
-                Serial.println("Nouvelle carte détectée, écriture en cours...");
-                byte data[] = {
-                    'p',
-                    'r',
-                    'o',
-                    'u',
-                    't',
-                    ' ',
-                    'd',
-                    'e',
-                    ' ',
-                    'g',
-                    'r',
-                    'e',
-                    'g',
-                };
-                writeMifare1k(data); // Écrire sur la carte
-                currentUID = uid;    // Mettre à jour l'UID courant
-                delay(1000);    
-            }
-            else
-            { // Si c'est la même carte qu'avant
-                Serial.println("Même carte détectée, lecture en cours...");
-                readMifare1K(); // Lire les données sur la carte
-                delay(1000);
-            }
-        }
-    }
-
-    else
-    {
-        delay(500); // Réduire la fréquence de boucle pour économiser les ressources
-    }
 }
 
 void RFIDManager::loadRFIDPrefs() {

@@ -25,12 +25,6 @@ void MotorManager::startStepMotor()
   _GRBL_A.setMotor(50000, 50000, 50000, 200);
 }
 
-void MotorManager::stopStepMotor()
-{
-  char cmd[] = "!\n"; 
-    _GRBL_A.sendGcode(cmd);
-}
-
 void MotorManager::defineAngleForServoMotor(const int id)
 {
   for(int cpt = 0; cpt < 3; cpt++){

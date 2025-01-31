@@ -75,21 +75,6 @@ void loop()
         currentUid.trim();
         if (uid != currentUid){
           Serial.println("Nouvelle carte détectée, écriture en cours...");
-                byte data[] = {
-                    'p',
-                    'r',
-                    'o',
-                    'u',
-                    't',
-                    ' ',
-                    'd',
-                    'e',
-                    ' ',
-                    'e',
-                    'l',
-                    'o',
-                    'u',
-                };
                 byte *byteArray = (byte*) dataToWrite.c_str();
                 rfidManager.writeMifare1k(byteArray); // Écrire sur la carte
                 currentUid = uid;    // Mettre à jour l'UID courant

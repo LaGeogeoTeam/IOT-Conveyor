@@ -12,14 +12,6 @@ void WifiManager::loadWiFiCredentials(String &ssid, String &password) {
     wifiPrefs.end();
 }
 
-
-void WifiManager::saveWiFiCredentials(const String &ssid, const String &password) {
-    wifiPrefs.begin("WiFiSettings", false); // Écriture
-    wifiPrefs.putString("ssid",     ssid);
-    wifiPrefs.putString("password", password);
-    wifiPrefs.end();
-}
-
 void WifiManager::connectToWiFi(const String &ssid, const String &password) {
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid.c_str(), password.c_str());

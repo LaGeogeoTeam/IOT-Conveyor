@@ -16,7 +16,6 @@ extern WifiModeState currentWifiMode;
 class WifiManager {
 public:
     void loadWiFiCredentials(String &ssid, String &password);
-    void saveWiFiCredentials(const String &ssid, const String &password);
     void connectToWiFi(const String &ssid, const String &password);
     void reconnectWiFi(const String &ssid, const String &password);
     void waitForWiFi();
